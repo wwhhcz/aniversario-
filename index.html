@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Para a Linhares</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500;1,600&family=Caveat:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --noite: #170f27;
+    --noite2: #241733;
+    --vinho: #3a1f3d;
+    --rosa: #e8879e;
+    --rosa-clara: #f4c6c6;
+    --dourado: #d9b382;
+    --creme: #fbf3ec;
+    --sombra: rgba(0,0,0,.35);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html, body{
+    background: var(--noite);
+    color: var(--creme);
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+  }
+
+  body.travado{ overflow: hidden; height: 100vh; }
+  body.destravado{
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100vh;
+  }
+
+  h1, h2, .script{
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .assinatura{
+    font-family: 'Caveat', cursive;
+  }
+
+  /* ---------- FUNDO ANIMADO (estrelas + corações) ---------- */
+  #fundo-estrelas{
+    position: fixed; inset:0;
+    background: radial-gradient(circle at 20% 20%, #2a1a3d, var(--noite) 60%);
+    z-index: -3;
+  }
+  .estrela{
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--creme);
+    border-radius: 50%;
+    opacity: .6;
+    animation: piscar 3s ease-in-out infinite;
+  }
+  @keyframes piscar{
+    0%, 100%{ opacity:.15; }
+    50%{ opacity:.9; }
+  }
+
+  #camada-coracoes{
+    position: fixed; inset:0;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+  }
+  .coracao-flutuante{
+    position: absolute;
+    bottom: -40px;
+    color: var(--rosa);
+    opacity: .8;
+    animation-name: subir;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    user-select: none;
+  }
+  @keyframes subir{
+    0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity:0; }
+    10%{ opacity:.85; }
+    90%{ opacity:.6; }
+    100%{ transform: translateY(-115vh) translateX(var(--deriva,20px)) rotate(25deg); opacity:0; }
+  }
+
+  /* ---------- ENVELOPE (tela de bloqueio) ---------- */
+  #tela-envelope{
+    position: fixed; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index: 50;
+    transition: opacity 1s ease, visibility 1s ease;
+    text-align:center;
+    padding: 20px;
+  }
+  #tela-envelope.escondido{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+
+  .envelope-wrap{
+    cursor:pointer;
+    perspective: 800px;
+  }
+
+  .envelope{
+    position:relative;
+    width: 220px;
+    height: 150px;
+    background: linear-gradient(160deg, #f4e3d3, #e9cdb2);
+    border-radius: 4px;
+    box-shadow: 0 20px 45px var(--sombra);
+  }
+  .envelope::before{ /* corpo triangular inferior */
+    content:"";
+    position:absolute; inset:0;
+    background:
+      linear-gradient(135deg, transparent 49.6%, rgba(0,0,0,.08) 50%),
+      linear-gradient(-135deg, transparent 49.6%, rgba(0,0,0,.08) 50%);
+  }
+  .aba{
+    position:absolute;
+    top:0; left:0; width:100%; height:50%;
+    background: linear-gradient(160deg, #fbf0e4, #eed6bd);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top;
+    transform: rotateX(0deg);
+    transition: transform .8s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  }
+  .selo{
+    position:absolute;
+    top:44%; left:50%;
+    transform: translate(-50%,-50%);
+    width:46px; height:46px;
+    background: radial-gradient(circle at 35% 30%, #d98d9e, #a5445c);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 20px;
+    box-shadow: 0 3px 8px rgba(0,0,0,.3);
+    z-index:2;
+  }
+  .envelope-wrap.aberto .aba{
+    transform: rotateX(180deg);
+  }
+  .envelope-wrap.aberto .selo{
+    opacity:0;
+    transition: opacity .3s ease;
+  }
+
+  .nome-destinatario{
+    margin-top: 26px;
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
+    color: var(--rosa-clara);
+    font-style: italic;
+    letter-spacing: .5px;
+  }
+
+  .instrucao{
+    margin-top: 10px;
+    font-size: .85rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--dourado);
+    animation: pulsar 2s ease-in-out infinite;
+  }
+  @keyframes pulsar{
+    0%,100%{ opacity:.5; }
+    50%{ opacity:1; }
+  }
+
+  /* ---------- SECOES ---------- */
+  section{
+    min-height: 100vh;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 90px 24px;
+    scroll-snap-align: start;
+    position: relative;
+  }
+
+  .eyebrow{
+    font-size: .75rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--dourado);
+    margin-bottom: 18px;
+  }
+
+  .carta{
+    max-width: 620px;
+  }
+  .carta h2{
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-style: italic;
+    font-weight: 500;
+    color: var(--rosa-clara);
+    margin-bottom: 28px;
+  }
+  .carta p{
+    font-size: clamp(1rem, 2.3vw, 1.15rem);
+    line-height: 1.85;
+    color: rgba(251,243,236,.88);
+    margin-bottom: 18px;
+    font-weight: 300;
+  }
+  .carta .assinatura{
+    margin-top: 30px;
+    font-size: 2rem;
+    color: var(--rosa);
+  }
+
+  /* ---------- MOTIVOS ---------- */
+  .lista-motivos{
+    max-width: 640px;
+    display:flex;
+    flex-direction:column;
+    gap: 22px;
+    margin-top: 10px;
+  }
+  .motivo{
+    display:flex;
+    align-items:baseline;
+    gap: 16px;
+    text-align:left;
+    opacity:0;
+    transform: translateY(24px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .motivo.visivel{
+    opacity:1;
+    transform: translateY(0);
+  }
+  .motivo .num{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--dourado);
+    flex-shrink:0;
+    width: 34px;
+  }
+  .motivo p{
+    font-size: clamp(1rem, 2.2vw, 1.1rem);
+    font-weight: 300;
+    color: rgba(251,243,236,.9);
+  }
+
+  /* ---------- GALERIA DE FOTOS ---------- */
+  .galeria{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(140px, 180px));
+    gap: 26px 22px;
+    max-width: 700px;
+    margin-top: 20px;
+  }
+  @media (min-width:640px){
+    .galeria{ grid-template-columns: repeat(3, minmax(150px, 190px)); }
+  }
+  .galeria-3{
+    grid-template-columns: repeat(2, minmax(140px, 180px));
+    max-width: 480px;
+  }
+  @media (min-width:640px){
+    .galeria-3{ grid-template-columns: repeat(3, minmax(150px, 190px)); max-width: 620px; }
+  }
+  .polaroid{
+    background: var(--creme);
+    padding: 10px 10px 34px 10px;
+    border-radius: 3px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.35);
+    transform: rotate(var(--giro, -3deg));
+    transition: transform .3s ease;
+    opacity:0;
+    translate: 0 20px;
+    animation: aparecer .7s ease forwards;
+    animation-delay: var(--atraso, 0s);
+  }
+  .polaroid:hover{ transform: rotate(0deg) scale(1.04); z-index:2; }
+  @keyframes aparecer{
+    to{ opacity:1; translate:0 0; }
+  }
+  .polaroid img{
+    width:100%;
+    aspect-ratio: 1/1.05;
+    object-fit: cover;
+    display:block;
+    background: #ded2c8;
+  }
+  .polaroid figcaption{
+    font-family:'Caveat', cursive;
+    font-size: 1.15rem;
+    color: #3a2a2a;
+    text-align:center;
+    margin-top: 8px;
+  }
+  .polaroid.sem-foto img{ display:none; }
+  .polaroid .marcador{
+    display:none;
+    width:100%;
+    aspect-ratio: 1/1.05;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap: 6px;
+    background: repeating-linear-gradient(135deg, #e9ded2, #e9ded2 8px, #ded1c1 8px, #ded1c1 16px);
+    color: #8a7563;
+    font-family:'Poppins',sans-serif;
+    font-size: .7rem;
+    padding: 8px;
+    text-align:center;
+    word-break: break-all;
+  }
+  .polaroid.sem-foto .marcador{ display:flex; }
+  .marcador .icone{ font-size: 1.5rem; }
+
+  /* ---------- PERGUNTA FINAL ---------- */
+  .pergunta-area h2{
+    font-size: clamp(1.9rem, 6vw, 2.8rem);
+    font-style: italic;
+    color: var(--rosa-clara);
+    margin-bottom: 40px;
+    max-width: 560px;
+  }
+  .botoes{
+    position:relative;
+    display:flex;
+    gap: 22px;
+    align-items:center;
+    justify-content:center;
+    min-height: 90px;
+    width: 100%;
+  }
+  .btn{
+    font-family:'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 15px 34px;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+    transition: transform .15s ease;
+  }
+  .btn-sim{
+    background: linear-gradient(135deg, var(--rosa), #c95d78);
+    color: var(--creme);
+    box-shadow: 0 10px 26px rgba(232,135,158,.35);
+  }
+  .btn-sim:hover{ transform: scale(1.06); }
+  .btn-nao{
+    background: transparent;
+    color: rgba(251,243,236,.7);
+    border: 1px solid rgba(251,243,236,.35);
+    position: relative;
+  }
+
+  .final-mensagem{
+    display:none;
+    max-width: 560px;
+    margin-top: 10px;
+  }
+  .final-mensagem.mostrar{ display:block; animation: aparecer .8s ease forwards; }
+  .final-mensagem h2{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    color: var(--rosa-clara);
+  }
+  .final-mensagem p{
+    margin-top: 14px;
+    font-weight:300;
+    color: rgba(251,243,236,.85);
+    line-height:1.8;
+  }
+
+  /* ---------- MUSICA (opcional) ---------- */
+  #botao-musica{
+    position: fixed;
+    top: 18px; right: 18px;
+    z-index: 60;
+    width: 42px; height:42px;
+    border-radius:50%;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.25);
+    color: var(--creme);
+    font-size: 1.1rem;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    backdrop-filter: blur(6px);
+  }
+
+  #widget-spotify{
+    position: fixed;
+    top: 66px; right: 18px;
+    z-index: 60;
+    width: 260px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 14px 30px rgba(0,0,0,.45);
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  #widget-spotify.aberto{
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  #widget-spotify iframe{
+    display:block;
+    border: none;
+  }
+
+  ::selection{ background: var(--rosa); color: var(--noite); }
+</style>
+</head>
+<body class="travado">
+
+<script>
+  // Precisa existir ANTES das imagens serem parseadas, senão o onerror
+  // pode disparar antes da função existir (comum em file:// e conexões rápidas).
+  function marcarSemFoto(img, nomeArquivo){
+    img.style.display = 'none';
+    const polaroid = img.closest('.polaroid');
+    if(polaroid) polaroid.classList.add('sem-foto');
+  }
+</script>
+
+<div id="fundo-estrelas"></div>
+<div id="camada-coracoes"></div>
+
+<button id="botao-musica" title="Musica" aria-label="Mostrar player de musica">🎵</button>
+<div id="widget-spotify">
+  <iframe src="https://open.spotify.com/embed/track/48fXOicuj4JWLYih7GDYgW?utm_source=generator&theme=0"
+    width="260" height="152" frameborder="0"
+    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+    loading="lazy"></iframe>
+</div>
+
+<!-- ============ TELA DE ENVELOPE ============ -->
+<div id="tela-envelope">
+  <div class="envelope-wrap" id="envelope-wrap">
+    <div class="envelope">
+      <div class="aba"></div>
+      <div class="selo">♥</div>
+    </div>
+  </div>
+  <div class="nome-destinatario">Linhares</div>
+  <div class="instrucao">toque para abrir</div>
+</div>
+
+<!-- ============ SECAO 1: A CARTA ============ -->
+<section id="secao-carta">
+  <div class="carta">
+    <div class="eyebrow">pra você</div>
+    <!-- EDITE AQUI: mensagem principal -->
+    <h2>Linhares,</h2>
+    <p>Não sei bem como começar isso, mas sei que queria muito que você lesse até o final.</p>
+    <p>Desde que a gente começou a se falar, meus dias ficaram diferentes. Mais leves, mais engraçados, mais com vontade de te contar as coisas.</p>
+    <p>Tem gente que a gente encontra e já sente que combina — foi assim que fiquei com você.</p>
+    <div class="assinatura">com carinho.</div>
+  </div>
+</section>
+
+<!-- ============ SECAO 2: MOTIVOS ============ -->
+<section id="secao-motivos">
+  <div class="eyebrow">alguns motivos</div>
+  <h2 class="script" style="font-style:italic; color:var(--rosa-clara); font-size:clamp(1.8rem,5vw,2.4rem); margin-bottom:8px;">Por que você</h2>
+  <div class="lista-motivos">
+    <!-- EDITE AQUI: troque pelos motivos de verdade -->
+    <div class="motivo"><span class="num">01</span><p>Pelo jeito que você ri das piadas ruins que eu conto</p></div>
+    <div class="motivo"><span class="num">02</span><p>Pela forma como você conta o seu dia com tanto detalhe</p></div>
+    <div class="motivo"><span class="num">03</span><p>Porque com você as conversas nunca ficam sem assunto</p></div>
+    <div class="motivo"><span class="num">04</span><p>Pelo carinho que você tem, mesmo sem perceber que tem</p></div>
+    <div class="motivo"><span class="num">05</span><p>Porque desde que te conheci eu penso em você toda hora</p></div>
+  </div>
+</section>
+
+<!-- ============ SECAO 3: FOTOS ============ -->
+<section id="secao-fotos">
+  <div class="eyebrow">a gente em fotos</div>
+  <h2 class="script" style="font-style:italic; color:var(--rosa-clara); font-size:clamp(1.8rem,5vw,2.4rem); margin-bottom:8px;">Nossos momentos</h2>
+  <div class="galeria galeria-3">
+    <!-- Troque as fotos colocando os arquivos dentro da pasta /fotos com esses nomes exatos -->
+    <figure class="polaroid" style="--giro:-4deg; --atraso:.05s;">
+      <img src="fotos/foto1.jpeg" alt="Foto 1" onerror="marcarSemFoto(this,'foto1.jpeg')">
+      <div class="marcador"><span class="icone">📷</span><span class="nome-arquivo">fotos/foto1.jpeg</span></div>
+      <figcaption>legenda aqui</figcaption>
+    </figure>
+    <figure class="polaroid" style="--giro:3deg; --atraso:.15s;">
+      <img src="fotos/foto2.jpeg" alt="Foto 2" onerror="marcarSemFoto(this,'foto2.jpeg')">
+      <div class="marcador"><span class="icone">📷</span><span class="nome-arquivo">fotos/foto2.jpeg</span></div>
+      <figcaption>legenda aqui</figcaption>
+    </figure>
+    <figure class="polaroid" style="--giro:-2deg; --atraso:.25s;">
+      <img src="fotos/foto3.jpeg" alt="Foto 3" onerror="marcarSemFoto(this,'foto3.jpeg')">
+      <div class="marcador"><span class="icone">📷</span><span class="nome-arquivo">fotos/foto3.jpeg</span></div>
+      <figcaption>legenda aqui</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ SECAO 4: PERGUNTA FINAL ============ -->
+<section id="secao-pergunta">
+  <div class="pergunta-area" id="pergunta-area">
+    <div class="eyebrow">última coisa</div>
+    <h2>Linhares, fica comigo?</h2>
+    <div class="botoes" id="botoes">
+      <button class="btn btn-sim" id="btn-sim">com certeza</button>
+      <button class="btn btn-nao" id="btn-nao">deixa eu pensar</button>
+    </div>
+  </div>
+  <div class="final-mensagem" id="final-mensagem">
+    <h2>ela disse sim 🤍</h2>
+    <p>Obrigado por ter chegado até aqui. Mal posso esperar pra ver no que isso vira.</p>
+  </div>
+</section>
+
+<script>
+  // ---------- ESTRELAS DE FUNDO ----------
+  const fundo = document.getElementById('fundo-estrelas');
+  for(let i=0;i<70;i++){
+    const e = document.createElement('div');
+    e.className = 'estrela';
+    e.style.left = Math.random()*100+'%';
+    e.style.top = Math.random()*100+'%';
+    e.style.animationDelay = (Math.random()*3)+'s';
+    fundo.appendChild(e);
+  }
+
+  // ---------- CORACOES FLUTUANTES ----------
+  const camadaCoracoes = document.getElementById('camada-coracoes');
+  function criarCoracao(){
+    const c = document.createElement('div');
+    c.className = 'coracao-flutuante';
+    c.textContent = Math.random() > .5 ? '♥' : '♡';
+    const tamanho = 12 + Math.random()*20;
+    c.style.left = Math.random()*100+'%';
+    c.style.fontSize = tamanho+'px';
+    c.style.setProperty('--deriva', (Math.random()*80-40)+'px');
+    const duracao = 8 + Math.random()*8;
+    c.style.animationDuration = duracao+'s';
+    camadaCoracoes.appendChild(c);
+    setTimeout(()=> c.remove(), duracao*1000);
+  }
+  setInterval(criarCoracao, 550);
+  for(let i=0;i<8;i++) setTimeout(criarCoracao, i*300);
+
+  // ---------- ABRIR ENVELOPE ----------
+  const telaEnvelope = document.getElementById('tela-envelope');
+  const envelopeWrap = document.getElementById('envelope-wrap');
+  envelopeWrap.addEventListener('click', () => {
+    envelopeWrap.classList.add('aberto');
+    setTimeout(() => {
+      telaEnvelope.classList.add('escondido');
+      document.body.classList.remove('travado');
+      document.body.classList.add('destravado');
+    }, 650);
+  });
+
+  // ---------- REVELAR MOTIVOS AO ROLAR ----------
+  const motivos = document.querySelectorAll('.motivo');
+  const observer = new IntersectionObserver((entradas)=>{
+    entradas.forEach(entrada=>{
+      if(entrada.isIntersecting){
+        entrada.target.classList.add('visivel');
+      }
+    });
+  }, { threshold: .3 });
+  motivos.forEach(m=>observer.observe(m));
+
+  // ---------- PLACEHOLDER DE FOTO ----------
+  // (função marcarSemFoto já foi definida no topo do <body>)
+
+  // ---------- BOTAO NAO FOGE ----------
+  const btnNao = document.getElementById('btn-nao');
+  const botoes = document.getElementById('botoes');
+  let tentativas = 0;
+  function fugir(){
+    tentativas++;
+    const areaW = botoes.clientWidth;
+    const areaH = botoes.clientHeight;
+    const maxX = Math.max(areaW/2 - 60, 40);
+    const maxY = Math.max(areaH/2 - 20, 20);
+    const x = (Math.random()*2-1)*maxX;
+    const y = (Math.random()*2-1)*maxY;
+    btnNao.style.position = 'relative';
+    btnNao.style.transform = `translate(${x}px, ${y}px)`;
+    const frases = ['deixa eu pensar','tenho certeza que não','quase','essa não','tenta de novo'];
+    if(tentativas <= frases.length) btnNao.textContent = frases[Math.min(tentativas-1, frases.length-1)];
+  }
+  btnNao.addEventListener('mouseenter', fugir);
+  btnNao.addEventListener('click', (ev)=>{ ev.preventDefault(); fugir(); });
+  btnNao.addEventListener('touchstart', (ev)=>{ ev.preventDefault(); fugir(); });
+
+  // ---------- BOTAO SIM ----------
+  const btnSim = document.getElementById('btn-sim');
+  const perguntaArea = document.getElementById('pergunta-area');
+  const finalMensagem = document.getElementById('final-mensagem');
+  btnSim.addEventListener('click', ()=>{
+    perguntaArea.style.display = 'none';
+    finalMensagem.classList.add('mostrar');
+    explosaoDeCoracoes();
+  });
+  function explosaoDeCoracoes(){
+    for(let i=0;i<26;i++){
+      setTimeout(()=>{
+        const c = document.createElement('div');
+        c.className = 'coracao-flutuante';
+        c.textContent = '♥';
+        c.style.left = (45 + Math.random()*10)+'%';
+        c.style.bottom = '30%';
+        c.style.fontSize = (14+Math.random()*22)+'px';
+        c.style.setProperty('--deriva', (Math.random()*260-130)+'px');
+        c.style.animationDuration = (2.5+Math.random()*2)+'s';
+        camadaCoracoes.appendChild(c);
+        setTimeout(()=> c.remove(), 5000);
+      }, i*40);
+    }
+  }
+
+  // ---------- MUSICA (player oficial do Spotify) ----------
+  const botaoMusica = document.getElementById('botao-musica');
+  const widgetSpotify = document.getElementById('widget-spotify');
+  botaoMusica.addEventListener('click', ()=>{
+    widgetSpotify.classList.toggle('aberto');
+  });
+</script>
+
+</body>
+</html>
