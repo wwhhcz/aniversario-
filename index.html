@@ -427,79 +427,6 @@
     color: rgba(255,246,238,.92);
   }
 
-  /* ---------- GALERIA DE FOTOS ---------- */
-  .galeria{
-    display:grid;
-    grid-template-columns: repeat(2, minmax(130px, 190px));
-    gap: 30px 22px;
-    max-width: 700px;
-    margin-top: 20px;
-    justify-content: center;
-  }
-  @media (min-width:640px){
-    .galeria{ grid-template-columns: repeat(3, minmax(160px, 200px)); }
-  }
-  .galeria-3{
-    grid-template-columns: repeat(2, minmax(130px, 190px));
-    max-width: 480px;
-  }
-  @media (min-width:640px){
-    .galeria-3{ grid-template-columns: repeat(3, minmax(160px, 200px)); max-width: 660px; }
-  }
-  .polaroid{
-    background: var(--creme);
-    padding: 10px 10px 34px 10px;
-    border-radius: 3px;
-    box-shadow: 0 12px 28px rgba(0,0,0,.4);
-    transform: rotate(var(--giro, -3deg));
-    transition: transform .35s ease, box-shadow .35s ease;
-    opacity:0;
-    translate: 0 20px;
-    animation: aparecer .7s ease forwards;
-    animation-delay: var(--atraso, 0s);
-  }
-  .polaroid:hover{
-    transform: rotate(0deg) scale(1.08);
-    box-shadow: 0 22px 44px rgba(0,0,0,.5), 0 0 30px rgba(255,111,145,.25);
-    z-index:2;
-  }
-  @keyframes aparecer{
-    to{ opacity:1; translate:0 0; }
-  }
-  .polaroid img{
-    width:100%;
-    aspect-ratio: 1/1.05;
-    object-fit: cover;
-    display:block;
-    background: #ded2c8;
-  }
-  .polaroid figcaption{
-    font-family:'Caveat', cursive;
-    font-size: 1.25rem;
-    color: #3a2a2a;
-    text-align:center;
-    margin-top: 8px;
-  }
-  .polaroid.sem-foto img{ display:none; }
-  .polaroid .marcador{
-    display:none;
-    width:100%;
-    aspect-ratio: 1/1.05;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    gap: 6px;
-    background: repeating-linear-gradient(135deg, #e9ded2, #e9ded2 8px, #ded1c1 8px, #ded1c1 16px);
-    color: #8a7563;
-    font-family:'Poppins',sans-serif;
-    font-size: .7rem;
-    padding: 8px;
-    text-align:center;
-    word-break: break-all;
-  }
-  .polaroid.sem-foto .marcador{ display:flex; }
-  .marcador .icone{ font-size: 1.5rem; }
-
   /* ---------- SONHOS / FUTURO ---------- */
   .grade-sonhos{
     display:grid;
@@ -511,6 +438,11 @@
   }
   @media (min-width:560px){
     .grade-sonhos{ grid-template-columns: 1fr 1fr; }
+    .grade-sonhos .sonho:last-child:nth-child(odd){
+      grid-column: 1 / -1;
+      max-width: 460px;
+      margin: 0 auto;
+    }
   }
   .sonho{
     background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
@@ -559,6 +491,20 @@
     color: var(--creme);
     box-shadow: 0 10px 26px rgba(232,53,95,.4);
     animation: pulsarBotao 2.2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-sim::after{
+    content:"";
+    position:absolute;
+    top:0; left:-60%;
+    width: 40%; height:100%;
+    background: linear-gradient(115deg, transparent, rgba(255,255,255,.45), transparent);
+    animation: brilhoBotao 3.4s ease-in-out infinite;
+  }
+  @keyframes brilhoBotao{
+    0%{ left:-60%; }
+    40%, 100%{ left:130%; }
   }
   @keyframes pulsarBotao{
     0%,100%{ box-shadow: 0 10px 26px rgba(232,53,95,.4); }
@@ -805,17 +751,46 @@
     font-style: italic;
   }
 
+  /* ---------- VINHETA CINEMATOGRAFICA ---------- */
+  #vinheta{
+    position: fixed; inset:0;
+    z-index: 4;
+    pointer-events:none;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.45) 100%);
+  }
+
+  /* ---------- BADGE "DESDE 11 DE JUNHO" ---------- */
+  #badge-tempo{
+    position: fixed;
+    right: 18px; bottom: 18px;
+    z-index: 60;
+    display:flex; flex-direction:column; align-items:flex-end; gap:2px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.2);
+    color: var(--creme);
+    font-size: .72rem;
+    padding: 8px 14px;
+    border-radius: 14px;
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .5s ease, transform .5s ease;
+    text-align:right;
+  }
+  #badge-tempo.visivel{ opacity:1; transform: translateY(0); }
+  #badge-tempo .dias-num{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--rosa-clara);
+  }
+
   ::selection{ background: var(--rosa); color: var(--noite); }
 </style>
 </head>
 <body class="travado">
 
 <script>
-  function marcarSemFoto(img, nomeArquivo){
-    img.style.display = 'none';
-    const polaroid = img.closest('.polaroid');
-    if(polaroid) polaroid.classList.add('sem-foto');
-  }
   function marcarSemFoto360(img, nomeArquivo){
     img.style.display = 'none';
     const face = img.closest('.face-360');
@@ -824,9 +799,11 @@
 </script>
 
 <div id="fundo-estrelas"></div>
+<div id="vinheta"></div>
 <div id="camada-coracoes"></div>
 <div id="progresso-wrap"><div id="progresso-barra"></div></div>
 <div id="contador-coracoes"><span>♥</span><span class="num-coracoes">0</span><span>colecionados</span></div>
+<div id="badge-tempo"><span class="dias-num">–</span><span>desde 11 de junho</span></div>
 <div id="surpresa-toast"></div>
 
 <button id="botao-musica" title="Sua música" aria-label="Tocar Menina, de Lua Dultra">🎵</button>
@@ -929,7 +906,7 @@
           <figcaption>seu sorriso de lado</figcaption>
         </figure>
         <figure class="face-360" data-nome="foto5.jpeg" style="--ang:270deg;">
-          <img src="foto5.jpeg" alt="Foto 5" onerror="marcarSemFoto360(this,'foto4.jpeg')">
+          <img src="foto5.jpeg" alt="Foto 5" onerror="marcarSemFoto360(this,'foto5.jpeg')">
           <div class="marcador-360"><span class="icone">📷</span><span>foto5.jpeg</span></div>
           <figcaption>e os seus lindos olhos...</figcaption>
         </figure>
@@ -970,7 +947,7 @@
   </div>
   <div class="final-mensagem" id="final-mensagem">
     <h2>Certeza que vai ter paciência? KKKKKKK <3 🤍</h2>
-    <p>Como você diz, Brigadão!! Agora vamos viver isso tudo de forma intensa, se for pra acontecer algo, que aconteça!!.</p>
+    <p>Como você diz, Brigadão!! Agora vamos viver isso tudo de forma intensa, se for pra acontecer algo, que aconteça!!</p>
   </div>
 </section>
 
@@ -1061,6 +1038,7 @@
       document.documentElement.classList.remove('travado');
       document.body.classList.remove('travado');
       document.body.classList.add('destravado');
+      mostrarBadgeTempo();
     }, 650);
   }
   envelopeWrap.addEventListener('click', abrirEnvelope);
@@ -1070,6 +1048,18 @@
       abrirEnvelope();
     }
   });
+
+  // ---------- BADGE "DESDE 11 DE JUNHO" (dias reais, calculados de verdade) ----------
+  function mostrarBadgeTempo(){
+    const badge = document.getElementById('badge-tempo');
+    const numero = badge.querySelector('.dias-num');
+    const inicio = new Date(2026, 5, 11); // 11 de junho de 2026
+    const hoje = new Date();
+    const diffMs = hoje.setHours(0,0,0,0) - inicio.setHours(0,0,0,0);
+    const dias = Math.max(0, Math.round(diffMs / 86400000));
+    numero.textContent = dias + (dias === 1 ? ' dia' : ' dias');
+    badge.classList.add('visivel');
+  }
 
   // ---------- REVELAR SECOES / MOTIVOS / LINHA DO TEMPO / SONHOS AO ROLAR ----------
   const secoes = document.querySelectorAll('section');
