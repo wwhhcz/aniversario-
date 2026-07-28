@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="travado">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>Para a Linhares</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500;1,600&family=Caveat:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --noite: #170f27;
-    --noite2: #241733;
-    --vinho: #3a1f3d;
-    --rosa: #e8879e;
-    --rosa-clara: #f4c6c6;
-    --dourado: #d9b382;
-    --creme: #fbf3ec;
-    --sombra: rgba(0,0,0,.35);
+    --noite: #17090f;
+    --noite2: #2a0f1c;
+    --vinho: #5c1327;
+    --vinho2: #7a1a35;
+    --rosa: #ff6f91;
+    --rosa-forte: #e8355f;
+    --rosa-clara: #ffd6e0;
+    --dourado: #e8b96a;
+    --creme: #fff6ee;
+    --sombra: rgba(0,0,0,.4);
   }
 
   *{ margin:0; padding:0; box-sizing:border-box; }
@@ -26,13 +28,15 @@
     color: var(--creme);
     font-family: 'Poppins', sans-serif;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
-  body.travado{ overflow: hidden; height: 100vh; }
+  html.travado, body.travado{ overflow: hidden; height: 100vh; overscroll-behavior: none; }
   body.destravado{
     scroll-snap-type: y mandatory;
     overflow-y: scroll;
     height: 100vh;
+    scroll-behavior: smooth;
   }
 
   h1, h2, .script{
@@ -43,11 +47,24 @@
     font-family: 'Caveat', cursive;
   }
 
-  /* ---------- FUNDO ANIMADO (estrelas + corações) ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+
+  /* ---------- FUNDO ANIMADO (estrelas + corações + glow pulsante) ---------- */
   #fundo-estrelas{
     position: fixed; inset:0;
-    background: radial-gradient(circle at 20% 20%, #2a1a3d, var(--noite) 60%);
+    background:
+      radial-gradient(circle at 18% 15%, rgba(232,53,95,.35), transparent 45%),
+      radial-gradient(circle at 82% 78%, rgba(122,26,53,.4), transparent 50%),
+      radial-gradient(circle at 50% 50%, #34101d, var(--noite) 70%);
+    background-size: 200% 200%, 200% 200%, 100% 100%;
+    animation: respirar 14s ease-in-out infinite;
     z-index: -3;
+  }
+  @keyframes respirar{
+    0%,100%{ background-position: 0% 0%, 100% 100%, center; }
+    50%{ background-position: 20% 20%, 80% 80%, center; }
   }
   .estrela{
     position: absolute;
@@ -77,12 +94,31 @@
     animation-timing-function: linear;
     animation-fill-mode: forwards;
     user-select: none;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .coracao-flutuante.estourando{
+    animation: none !important;
+    transition: transform .35s ease, opacity .35s ease;
+    transform: scale(1.8);
+    opacity: 0 !important;
   }
   @keyframes subir{
-    0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity:0; }
+    0%{ transform: translateY(0) translateX(0) rotate(0deg) scale(1); opacity:0; }
     10%{ opacity:.85; }
     90%{ opacity:.6; }
-    100%{ transform: translateY(-115vh) translateX(var(--deriva,20px)) rotate(25deg); opacity:0; }
+    100%{ transform: translateY(-115vh) translateX(var(--deriva,20px)) rotate(25deg) scale(1.1); opacity:0; }
+  }
+  .coracao-cursor{
+    position: fixed;
+    color: var(--rosa-forte);
+    pointer-events:none;
+    z-index: 999;
+    animation: sumir .9s ease-out forwards;
+  }
+  @keyframes sumir{
+    0%{ opacity:.9; transform: translateY(0) scale(1); }
+    100%{ opacity:0; transform: translateY(-40px) scale(.5); }
   }
 
   /* ---------- ENVELOPE (tela de bloqueio) ---------- */
@@ -90,6 +126,7 @@
     position: fixed; inset:0;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     z-index: 50;
+    background: radial-gradient(circle at 50% 40%, rgba(122,26,53,.5), var(--noite) 75%);
     transition: opacity 1s ease, visibility 1s ease;
     text-align:center;
     padding: 20px;
@@ -104,6 +141,11 @@
     cursor:pointer;
     perspective: 800px;
   }
+  .envelope-wrap:focus-visible .envelope{
+    outline: 2px solid var(--rosa-clara);
+    outline-offset: 6px;
+    border-radius: 8px;
+  }
 
   .envelope{
     position:relative;
@@ -111,13 +153,18 @@
     height: 150px;
     background: linear-gradient(160deg, #f4e3d3, #e9cdb2);
     border-radius: 4px;
-    box-shadow: 0 20px 45px var(--sombra);
-    transition: transform .3s ease;
+    box-shadow: 0 20px 45px var(--sombra), 0 0 60px rgba(232,53,95,.25);
+    transition: transform .3s ease, box-shadow .3s ease;
+    animation: flutuar 3.5s ease-in-out infinite;
+  }
+  @keyframes flutuar{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-8px); }
   }
   .envelope-wrap:hover .envelope{
-    transform: translateY(-4px);
+    box-shadow: 0 24px 50px var(--sombra), 0 0 80px rgba(232,53,95,.4);
   }
-  .envelope::before{ /* corpo triangular inferior */
+  .envelope::before{
     content:"";
     position:absolute; inset:0;
     background:
@@ -139,13 +186,14 @@
     top:44%; left:50%;
     transform: translate(-50%,-50%);
     width:46px; height:46px;
-    background: radial-gradient(circle at 35% 30%, #d98d9e, #a5445c);
+    background: radial-gradient(circle at 35% 30%, var(--rosa), var(--vinho2));
     border-radius:50%;
     display:flex; align-items:center; justify-content:center;
     font-size: 20px;
     box-shadow: 0 3px 8px rgba(0,0,0,.3);
     z-index:2;
   }
+  .envelope-wrap.aberto .envelope{ animation: none; }
   .envelope-wrap.aberto .aba{
     transform: rotateX(180deg);
   }
@@ -156,8 +204,11 @@
 
   .nome-destinatario{
     margin-top: 26px;
-    font-size: clamp(2.2rem, 8vw, 3.2rem);
-    color: var(--rosa-clara);
+    font-size: clamp(2.2rem, 8vw, 3.4rem);
+    background: linear-gradient(90deg, var(--rosa-clara), var(--rosa), var(--dourado));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     font-style: italic;
     letter-spacing: .5px;
   }
@@ -187,6 +238,30 @@
     padding: 90px 24px;
     scroll-snap-align: start;
     position: relative;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity .9s ease, transform .9s ease;
+  }
+  section.visivel-secao{
+    opacity: 1;
+    transform: translateY(0);
+  }
+  section::after{
+    content:"";
+    position:absolute;
+    left:50%; bottom: 28px;
+    transform: translateX(-50%);
+    width: 1px; height: 34px;
+    background: linear-gradient(to bottom, transparent, var(--rosa));
+    opacity: .5;
+  }
+  section:last-of-type::after{ display:none; }
+
+  .divisor-coracao{
+    color: var(--rosa);
+    font-size: 1.4rem;
+    margin: 8px 0 6px;
+    opacity: .8;
   }
 
   .eyebrow{
@@ -210,13 +285,13 @@
   .carta p{
     font-size: clamp(1rem, 2.3vw, 1.15rem);
     line-height: 1.85;
-    color: rgba(251,243,236,.88);
+    color: rgba(255,246,238,.9);
     margin-bottom: 18px;
     font-weight: 300;
   }
   .carta .assinatura{
     margin-top: 30px;
-    font-size: 2rem;
+    font-size: 2.1rem;
     color: var(--rosa);
   }
 
@@ -252,22 +327,120 @@
   .motivo p{
     font-size: clamp(1rem, 2.2vw, 1.1rem);
     font-weight: 300;
-    color: rgba(251,243,236,.9);
+    color: rgba(255,246,238,.92);
+  }
+
+  .motivo-card{
+    perspective: 900px;
+    cursor: pointer;
+    min-height: 56px;
+  }
+  .motivo-card .motivo-face{
+    display:flex;
+    align-items:baseline;
+    gap: 16px;
+    width:100%;
+  }
+  .motivo-card{
+    position: relative;
+  }
+  .motivo-card .motivo-frente, .motivo-card .motivo-verso{
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  .motivo-card .motivo-verso{
+    position:absolute;
+    top:0; left:0;
+    opacity:0;
+    transform: rotateX(90deg);
+    color: var(--rosa-clara);
+    font-family:'Caveat', cursive;
+    font-size: 1.3rem;
+    padding-left: 50px;
+  }
+  .motivo-card.virado .motivo-frente{
+    opacity:0;
+    transform: rotateX(-90deg);
+  }
+  .motivo-card.virado .motivo-verso{
+    opacity:1;
+    transform: rotateX(0deg);
+  }
+  .motivo-card:focus-visible{
+    outline: 1px solid var(--rosa-clara);
+    outline-offset: 6px;
+    border-radius: 8px;
+  }
+  .dica-flip{
+    margin-top: 4px;
+    font-size: .8rem;
+    letter-spacing: 1px;
+    color: rgba(255,214,224,.55);
+    font-style: italic;
+  }
+
+  /* ---------- LINHA DO TEMPO ---------- */
+  .linha-tempo{
+    max-width: 600px;
+    width: 100%;
+    margin-top: 10px;
+    position: relative;
+    display:flex;
+    flex-direction:column;
+    gap: 34px;
+    padding-left: 26px;
+  }
+  .linha-tempo::before{
+    content:"";
+    position:absolute;
+    left: 5px; top: 6px; bottom: 6px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--rosa), var(--dourado), transparent);
+  }
+  .marco{
+    position: relative;
+    text-align: left;
+    opacity:0;
+    transform: translateX(-16px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .marco.visivel{ opacity:1; transform: translateX(0); }
+  .marco::before{
+    content:"";
+    position:absolute;
+    left: -26px; top: 6px;
+    width: 12px; height:12px;
+    border-radius:50%;
+    background: var(--rosa);
+    box-shadow: 0 0 0 4px rgba(255,111,145,.2);
+  }
+  .marco .data{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--dourado);
+    font-size: 1.1rem;
+    display:block;
+    margin-bottom: 4px;
+  }
+  .marco p{
+    font-size: clamp(.95rem, 2.1vw, 1.05rem);
+    font-weight: 300;
+    color: rgba(255,246,238,.92);
   }
 
   /* ---------- GALERIA DE FOTOS ---------- */
   .galeria{
     display:grid;
-    grid-template-columns: repeat(2, minmax(140px, 190px));
-    gap: 30px 24px;
+    grid-template-columns: repeat(2, minmax(130px, 190px));
+    gap: 30px 22px;
     max-width: 700px;
     margin-top: 20px;
+    justify-content: center;
   }
   @media (min-width:640px){
     .galeria{ grid-template-columns: repeat(3, minmax(160px, 200px)); }
   }
   .galeria-3{
-    grid-template-columns: repeat(2, minmax(150px, 190px));
+    grid-template-columns: repeat(2, minmax(130px, 190px));
     max-width: 480px;
   }
   @media (min-width:640px){
@@ -277,7 +450,7 @@
     background: var(--creme);
     padding: 10px 10px 34px 10px;
     border-radius: 3px;
-    box-shadow: 0 12px 28px rgba(0,0,0,.35);
+    box-shadow: 0 12px 28px rgba(0,0,0,.4);
     transform: rotate(var(--giro, -3deg));
     transition: transform .35s ease, box-shadow .35s ease;
     opacity:0;
@@ -286,8 +459,8 @@
     animation-delay: var(--atraso, 0s);
   }
   .polaroid:hover{
-    transform: rotate(0deg) scale(1.07);
-    box-shadow: 0 20px 40px rgba(0,0,0,.45);
+    transform: rotate(0deg) scale(1.08);
+    box-shadow: 0 22px 44px rgba(0,0,0,.5), 0 0 30px rgba(255,111,145,.25);
     z-index:2;
   }
   @keyframes aparecer{
@@ -302,7 +475,7 @@
   }
   .polaroid figcaption{
     font-family:'Caveat', cursive;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     color: #3a2a2a;
     text-align:center;
     margin-top: 8px;
@@ -326,6 +499,33 @@
   }
   .polaroid.sem-foto .marcador{ display:flex; }
   .marcador .icone{ font-size: 1.5rem; }
+
+  /* ---------- SONHOS / FUTURO ---------- */
+  .grade-sonhos{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    max-width: 620px;
+    width: 100%;
+    margin-top: 10px;
+  }
+  @media (min-width:560px){
+    .grade-sonhos{ grid-template-columns: 1fr 1fr; }
+  }
+  .sonho{
+    background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,214,224,.18);
+    border-radius: 14px;
+    padding: 20px 18px;
+    text-align:left;
+    opacity:0;
+    transform: translateY(20px);
+    transition: opacity .7s ease, transform .7s ease, border-color .3s ease;
+  }
+  .sonho.visivel{ opacity:1; transform: translateY(0); }
+  .sonho:hover{ border-color: rgba(255,111,145,.55); }
+  .sonho .icone-sonho{ font-size: 1.4rem; display:block; margin-bottom: 8px; }
+  .sonho p{ font-size: .98rem; font-weight:300; color: rgba(255,246,238,.9); line-height:1.6; }
 
   /* ---------- PERGUNTA FINAL ---------- */
   .pergunta-area h2{
@@ -352,18 +552,23 @@
     border-radius: 40px;
     border: none;
     cursor: pointer;
-    transition: transform .15s ease;
+    transition: transform .15s ease, box-shadow .15s ease;
   }
   .btn-sim{
-    background: linear-gradient(135deg, var(--rosa), #c95d78);
+    background: linear-gradient(135deg, var(--rosa), var(--rosa-forte));
     color: var(--creme);
-    box-shadow: 0 10px 26px rgba(232,135,158,.35);
+    box-shadow: 0 10px 26px rgba(232,53,95,.4);
+    animation: pulsarBotao 2.2s ease-in-out infinite;
+  }
+  @keyframes pulsarBotao{
+    0%,100%{ box-shadow: 0 10px 26px rgba(232,53,95,.4); }
+    50%{ box-shadow: 0 10px 34px rgba(232,53,95,.7); }
   }
   .btn-sim:hover{ transform: scale(1.06); }
   .btn-nao{
     background: transparent;
-    color: rgba(251,243,236,.7);
-    border: 1px solid rgba(251,243,236,.35);
+    color: rgba(255,246,238,.7);
+    border: 1px solid rgba(255,246,238,.35);
     position: relative;
   }
 
@@ -382,7 +587,7 @@
   .final-mensagem p{
     margin-top: 14px;
     font-weight:300;
-    color: rgba(251,243,236,.85);
+    color: rgba(255,246,238,.9);
     line-height:1.8;
   }
 
@@ -400,7 +605,9 @@
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
     backdrop-filter: blur(6px);
+    transition: box-shadow .3s ease;
   }
+  #botao-musica:hover{ box-shadow: 0 0 20px rgba(255,111,145,.5); }
 
   #widget-spotify{
     position: fixed;
@@ -425,14 +632,72 @@
     border: none;
   }
 
+  /* ---------- BARRA DE PROGRESSO (coração) ---------- */
+  #progresso-wrap{
+    position: fixed;
+    left: 0; top:0;
+    width: 100%; height: 3px;
+    z-index: 61;
+    background: rgba(255,255,255,.06);
+  }
+  #progresso-barra{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--rosa), var(--dourado));
+    transition: width .1s linear;
+  }
+
+  /* ---------- CONTADOR DE CORACOES (mini jogo) ---------- */
+  #contador-coracoes{
+    position: fixed;
+    left: 18px; bottom: 18px;
+    z-index: 60;
+    display:flex; align-items:center; gap:8px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.2);
+    color: var(--creme);
+    font-size: .85rem;
+    padding: 8px 14px;
+    border-radius: 30px;
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  #contador-coracoes.visivel{ opacity: 1; transform: translateY(0); }
+  #contador-coracoes .num-coracoes{ color: var(--rosa); font-weight:600; }
+
+  #surpresa-toast{
+    position: fixed;
+    left: 50%; bottom: 70px;
+    transform: translateX(-50%) translateY(10px);
+    z-index: 62;
+    max-width: 280px;
+    text-align:center;
+    background: linear-gradient(160deg, rgba(122,26,53,.95), rgba(23,9,15,.95));
+    border: 1px solid rgba(255,214,224,.3);
+    color: var(--rosa-clara);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    padding: 14px 20px;
+    border-radius: 14px;
+    box-shadow: 0 14px 30px rgba(0,0,0,.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  #surpresa-toast.mostrar{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   ::selection{ background: var(--rosa); color: var(--noite); }
 </style>
 </head>
 <body class="travado">
 
 <script>
-  // Precisa existir ANTES das imagens serem parseadas, senão o onerror
-  // pode disparar antes da função existir (comum em file:// e conexões rápidas).
   function marcarSemFoto(img, nomeArquivo){
     img.style.display = 'none';
     const polaroid = img.closest('.polaroid');
@@ -442,10 +707,13 @@
 
 <div id="fundo-estrelas"></div>
 <div id="camada-coracoes"></div>
+<div id="progresso-wrap"><div id="progresso-barra"></div></div>
+<div id="contador-coracoes"><span>♥</span><span class="num-coracoes">0</span><span>colecionados</span></div>
+<div id="surpresa-toast"></div>
 
-<button id="botao-musica" title="Musica" aria-label="Mostrar player de musica">🎵</button>
+<button id="botao-musica" title="Sua música" aria-label="Tocar Menina, de Lua Dultra">🎵</button>
 <div id="widget-spotify">
-  <iframe src="https://open.spotify.com/embed/track/48fXOicuj4JWLYih7GDYgW?utm_source=generator&theme=0"
+  <iframe src="https://open.spotify.com/embed/track/2xS6iD5MMK8nq9xBsXH4r3?utm_source=generator&theme=0"
     width="260" height="152" frameborder="0"
     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
     loading="lazy"></iframe>
@@ -453,7 +721,7 @@
 
 <!-- ============ TELA DE ENVELOPE ============ -->
 <div id="tela-envelope">
-  <div class="envelope-wrap" id="envelope-wrap">
+  <div class="envelope-wrap" id="envelope-wrap" role="button" tabindex="0" aria-label="Abrir envelope">
     <div class="envelope">
       <div class="aba"></div>
       <div class="selo">♥</div>
@@ -467,12 +735,14 @@
 <section id="secao-carta">
   <div class="carta">
     <div class="eyebrow">pra você</div>
-    <!-- EDITE AQUI: mensagem principal -->
     <h2>Linhares,</h2>
-    <p>Não sei bem como começar isso, mas sei que queria muito que você lesse até o final.</p>
-    <p>Desde que a gente começou a se falar, meus dias ficaram diferentes. Mais leves, mais engraçados, mais com vontade de te contar as coisas.</p>
-    <p>Tem gente que a gente encontra e já sente que combina — foi assim que fiquei com você.</p>
-    <div class="assinatura">com carinho.</div>
+    <p>Não sei se sou muito bom com palavras bonitas, então vou tentar ser só sincero.</p>
+    <p>A gente nem começou de um jeito muito planejado. Eu te vi no seu trabalho, tomei coragem, pedi seu Instagram, e não esperava que aquilo fosse virar isso aqui. Dia 11 de junho a gente começou a conversar de verdade, e de lá pra cá eu fui gostando de você aos poucos, sem forçar nada.</p>
+    <p>Sei que a gente ainda tá se conhecendo, sem rótulo grande nem promessa exagerada. Mas dentro do que a gente é hoje, eu quero fazer valer a pena — quero dar o meu 101%, do jeito que você merece.</p>
+    <p>Gosto muito de você. Gosto do nosso jeito, do nosso tempo, e de onde isso pode chegar.</p>
+    <p style="font-size:.95rem; opacity:.8;">Ali no cantinho de cima tem a "Menina", da Lua Dultra — sei que é a sua favorita, então deixei ela tocando pra você.</p>
+    <div class="divisor-coracao">♥</div>
+    <div class="assinatura">com sinceridade.</div>
   </div>
 </section>
 
@@ -481,21 +751,47 @@
   <div class="eyebrow">alguns motivos</div>
   <h2 class="script" style="font-style:italic; color:var(--rosa-clara); font-size:clamp(1.8rem,5vw,2.4rem); margin-bottom:8px;">Por que você</h2>
   <div class="lista-motivos">
-    <!-- EDITE AQUI: troque pelos motivos de verdade -->
-    <div class="motivo"><span class="num">01</span><p>Pelo jeito que você ri das piadas ruins que eu conto</p></div>
-    <div class="motivo"><span class="num">02</span><p>Pela forma como você conta o seu dia com tanto detalhe</p></div>
-    <div class="motivo"><span class="num">03</span><p>Porque com você as conversas nunca ficam sem assunto</p></div>
-    <div class="motivo"><span class="num">04</span><p>Pelo carinho que você tem, mesmo sem perceber que tem</p></div>
-    <div class="motivo"><span class="num">05</span><p>Porque desde que te conheci eu penso em você toda hora</p></div>
+    <div class="motivo motivo-card" tabindex="0" role="button" aria-label="Toque para virar o cartão">
+      <div class="motivo-face motivo-frente"><span class="num">01</span><p>Pelo jeito que você ri das piadas ruins que eu conto</p></div>
+      <div class="motivo-face motivo-verso"><p>sério, rio sozinho depois só de lembrar</p></div>
+    </div>
+    <div class="motivo motivo-card" tabindex="0" role="button" aria-label="Toque para virar o cartão">
+      <div class="motivo-face motivo-frente"><span class="num">02</span><p>Pela forma como você conta o seu dia com tanto detalhe</p></div>
+      <div class="motivo-face motivo-verso"><p>eu escuto tudo com atenção, prometo</p></div>
+    </div>
+    <div class="motivo motivo-card" tabindex="0" role="button" aria-label="Toque para virar o cartão">
+      <div class="motivo-face motivo-frente"><span class="num">03</span><p>Porque com você as conversas nunca ficam sem assunto</p></div>
+      <div class="motivo-face motivo-verso"><p>e olha que eu não sou de ter muito papo</p></div>
+    </div>
+    <div class="motivo motivo-card" tabindex="0" role="button" aria-label="Toque para virar o cartão">
+      <div class="motivo-face motivo-frente"><span class="num">04</span><p>Pelo carinho que você tem, mesmo sem perceber que tem</p></div>
+      <div class="motivo-face motivo-verso"><p>quero continuar por perto pra receber esse carinho</p></div>
+    </div>
+    <div class="motivo motivo-card" tabindex="0" role="button" aria-label="Toque para virar o cartão">
+      <div class="motivo-face motivo-frente"><span class="num">05</span><p>Porque, mesmo sem rótulo grande, eu quero fazer isso valer a pena</p></div>
+      <div class="motivo-face motivo-verso"><p>101% pode não ser muito, mas é tudo que eu tenho pra dar</p></div>
+    </div>
+  </div>
+  <div class="dica-flip">toque nos cartões pra ver mais →</div>
+</section>
+
+<!-- ============ SECAO 3: LINHA DO TEMPO ============ -->
+<section id="secao-tempo">
+  <div class="eyebrow">nossa história (até aqui)</div>
+  <h2 class="script" style="font-style:italic; color:var(--rosa-clara); font-size:clamp(1.8rem,5vw,2.4rem); margin-bottom:8px;">Pedacinhos do caminho</h2>
+  <div class="linha-tempo">
+    <div class="marco"><span class="data">o encontro</span><p>Te vi no seu trabalho e tomei coragem de pedir seu Instagram.</p></div>
+    <div class="marco"><span class="data">11 de junho</span><p>Começamos a conversar de verdade, sem saber onde isso ia dar.</p></div>
+    <div class="marco"><span class="data">de lá pra cá</span><p>Fomos nos conhecendo aos poucos, sem pressa e sem forçar nada.</p></div>
+    <div class="marco"><span class="data">agora</span><p>Dois ficantes sérios, tentando dar 101% um pro outro.</p></div>
   </div>
 </section>
 
-<!-- ============ SECAO 3: FOTOS ============ -->
+<!-- ============ SECAO 4: FOTOS ============ -->
 <section id="secao-fotos">
   <div class="eyebrow">a gente em fotos</div>
   <h2 class="script" style="font-style:italic; color:var(--rosa-clara); font-size:clamp(1.8rem,5vw,2.4rem); margin-bottom:8px;">Nossos momentos</h2>
   <div class="galeria galeria-3">
-    <!-- Fotos reais -->
     <figure class="polaroid" style="--giro:-4deg; --atraso:.05s;">
       <img src="fotos/foto1.jpeg" alt="Foto 1" onerror="marcarSemFoto(this,'foto1.jpeg')" style="object-position: 60% 40%;">
       <div class="marcador"><span class="icone">📷</span><span class="nome-arquivo">foto1.jpeg</span></div>
@@ -514,7 +810,20 @@
   </div>
 </section>
 
-<!-- ============ SECAO 4: PERGUNTA FINAL ============ -->
+<!-- ============ SECAO 5: SONHOS / FUTURO ============ -->
+<section id="secao-sonhos">
+  <div class="eyebrow">o que vem por aí</div>
+  <h2 class="script" style="font-style:italic; color:var(--rosa-clara); font-size:clamp(1.8rem,5vw,2.4rem); margin-bottom:8px;">Quero viver com você</h2>
+  <div class="grade-sonhos">
+    <!-- EDITE AQUI: troque pelos planos de verdade -->
+    <div class="sonho"><span class="icone-sonho">🌅</span><p>Ver o sol nascer com você em algum lugar novo</p></div>
+    <div class="sonho"><span class="icone-sonho">🎶</span><p>Descobrir músicas juntos e ter as nossas próprias</p></div>
+    <div class="sonho"><span class="icone-sonho">🍜</span><p>Experimentar comidas estranhas só pra rir do resultado</p></div>
+    <div class="sonho"><span class="icone-sonho">🏡</span><p>Construir uma rotina boa, dos nossos jeitos</p></div>
+  </div>
+</section>
+
+<!-- ============ SECAO 6: PERGUNTA FINAL ============ -->
 <section id="secao-pergunta">
   <div class="pergunta-area" id="pergunta-area">
     <div class="eyebrow">última coisa</div>
@@ -526,7 +835,7 @@
   </div>
   <div class="final-mensagem" id="final-mensagem">
     <h2>ela disse sim 🤍</h2>
-    <p>Obrigado por ter chegado até aqui. Mal posso esperar pra ver no que isso vira.</p>
+    <p>Obrigado por ter chegado até aqui. Do meu lado, é 101% — vamos ver, com calma, no que isso vira.</p>
   </div>
 </section>
 
@@ -554,26 +863,89 @@
     c.style.setProperty('--deriva', (Math.random()*80-40)+'px');
     const duracao = 8 + Math.random()*8;
     c.style.animationDuration = duracao+'s';
+    c.addEventListener('click', ()=> coletarCoracao(c));
     camadaCoracoes.appendChild(c);
     setTimeout(()=> c.remove(), duracao*1000);
   }
   setInterval(criarCoracao, 550);
   for(let i=0;i<8;i++) setTimeout(criarCoracao, i*300);
 
+  // ---------- COLETAR CORACOES (mini jogo com surpresa no 11) ----------
+  const contadorEl = document.getElementById('contador-coracoes');
+  const numeroEl = contadorEl.querySelector('.num-coracoes');
+  const toastEl = document.getElementById('surpresa-toast');
+  let coracoesColetados = 0;
+  let toastTimeout = null;
+  function mostrarToast(texto){
+    toastEl.textContent = texto;
+    toastEl.classList.add('mostrar');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(()=> toastEl.classList.remove('mostrar'), 4200);
+  }
+  function coletarCoracao(elemento){
+    if(elemento.classList.contains('estourando')) return;
+    elemento.classList.add('estourando');
+    setTimeout(()=> elemento.remove(), 350);
+    coracoesColetados++;
+    numeroEl.textContent = coracoesColetados;
+    contadorEl.classList.add('visivel');
+    if(coracoesColetados === 11){
+      mostrarToast('11 corações... assim como 11 de junho. 🤍');
+    } else if(coracoesColetados === 1){
+      mostrarToast('toque nos corações que passam — tem uma surpresa esperando');
+    }
+  }
+
+  // ---------- CORACOES NO CURSOR (sutil, desktop) ----------
+  let ultimoCoracaoCursor = 0;
+  function coracaoNoCursor(x, y){
+    const agora = Date.now();
+    if(agora - ultimoCoracaoCursor < 220) return;
+    ultimoCoracaoCursor = agora;
+    const c = document.createElement('div');
+    c.className = 'coracao-cursor';
+    c.textContent = '♥';
+    c.style.left = x+'px';
+    c.style.top = y+'px';
+    c.style.fontSize = (10+Math.random()*8)+'px';
+    document.body.appendChild(c);
+    setTimeout(()=> c.remove(), 900);
+  }
+  if(window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+    document.addEventListener('mousemove', (ev)=> coracaoNoCursor(ev.clientX, ev.clientY));
+  }
+
   // ---------- ABRIR ENVELOPE ----------
   const telaEnvelope = document.getElementById('tela-envelope');
   const envelopeWrap = document.getElementById('envelope-wrap');
-  envelopeWrap.addEventListener('click', () => {
+  function abrirEnvelope(){
+    if(envelopeWrap.classList.contains('aberto')) return;
     envelopeWrap.classList.add('aberto');
     setTimeout(() => {
       telaEnvelope.classList.add('escondido');
+      document.documentElement.classList.remove('travado');
       document.body.classList.remove('travado');
       document.body.classList.add('destravado');
     }, 650);
+  }
+  envelopeWrap.addEventListener('click', abrirEnvelope);
+  envelopeWrap.addEventListener('keydown', (ev)=>{
+    if(ev.key === 'Enter' || ev.key === ' '){
+      ev.preventDefault();
+      abrirEnvelope();
+    }
   });
 
-  // ---------- REVELAR MOTIVOS AO ROLAR ----------
-  const motivos = document.querySelectorAll('.motivo');
+  // ---------- REVELAR SECOES / MOTIVOS / LINHA DO TEMPO / SONHOS AO ROLAR ----------
+  const secoes = document.querySelectorAll('section');
+  const observerSecoes = new IntersectionObserver((entradas)=>{
+    entradas.forEach(entrada=>{
+      if(entrada.isIntersecting) entrada.target.classList.add('visivel-secao');
+    });
+  }, { threshold: .15 });
+  secoes.forEach(s=>observerSecoes.observe(s));
+
+  const revelaveis = document.querySelectorAll('.motivo, .marco, .sonho');
   const observer = new IntersectionObserver((entradas)=>{
     entradas.forEach(entrada=>{
       if(entrada.isIntersecting){
@@ -581,10 +953,26 @@
       }
     });
   }, { threshold: .3 });
-  motivos.forEach(m=>observer.observe(m));
+  revelaveis.forEach(m=>observer.observe(m));
 
-  // ---------- PLACEHOLDER DE FOTO ----------
-  // (função marcarSemFoto já foi definida no topo do <body>)
+  // ---------- CARTOES DE MOTIVOS: VIRAR AO TOQUE ----------
+  document.querySelectorAll('.motivo-card').forEach(card=>{
+    card.addEventListener('click', ()=> card.classList.toggle('virado'));
+    card.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter' || ev.key === ' '){
+        ev.preventDefault();
+        card.classList.toggle('virado');
+      }
+    });
+  });
+
+  // ---------- BARRA DE PROGRESSO ----------
+  const progressoBarra = document.getElementById('progresso-barra');
+  window.addEventListener('scroll', ()=>{
+    const alturaTotal = document.documentElement.scrollHeight - window.innerHeight;
+    const progresso = alturaTotal > 0 ? (window.scrollY / alturaTotal) * 100 : 0;
+    progressoBarra.style.width = progresso+'%';
+  });
 
   // ---------- BOTAO NAO FOGE ----------
   const btnNao = document.getElementById('btn-nao');
@@ -617,19 +1005,19 @@
     explosaoDeCoracoes();
   });
   function explosaoDeCoracoes(){
-    for(let i=0;i<26;i++){
+    for(let i=0;i<36;i++){
       setTimeout(()=>{
         const c = document.createElement('div');
         c.className = 'coracao-flutuante';
         c.textContent = '♥';
-        c.style.left = (45 + Math.random()*10)+'%';
-        c.style.bottom = '30%';
-        c.style.fontSize = (14+Math.random()*22)+'px';
-        c.style.setProperty('--deriva', (Math.random()*260-130)+'px');
+        c.style.left = (40 + Math.random()*20)+'%';
+        c.style.bottom = '25%';
+        c.style.fontSize = (14+Math.random()*24)+'px';
+        c.style.setProperty('--deriva', (Math.random()*300-150)+'px');
         c.style.animationDuration = (2.5+Math.random()*2)+'s';
         camadaCoracoes.appendChild(c);
         setTimeout(()=> c.remove(), 5000);
-      }, i*40);
+      }, i*35);
     }
   }
 
