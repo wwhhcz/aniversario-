@@ -692,6 +692,119 @@
     transform: translateX(-50%) translateY(0);
   }
 
+  /* ---------- CARROSSEL 360° DE FOTOS ---------- */
+  .carrossel-360{
+    width: 100%;
+    max-width: 360px;
+    margin: 10px auto 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .cena-360{
+    width: 100%;
+    max-width: 260px;
+    height: 340px;
+    perspective: 1200px;
+    margin: 0 auto;
+  }
+  .palco-360{
+    width:100%; height:100%;
+    position:relative;
+    transform-style: preserve-3d;
+    transition: transform .5s cubic-bezier(.22,.85,.4,1);
+    cursor: grab;
+    touch-action: pan-y;
+  }
+  .palco-360.arrastando{
+    transition: none;
+    cursor: grabbing;
+  }
+  .face-360{
+    position:absolute;
+    inset:0;
+    background: var(--creme);
+    padding: 10px 10px 34px 10px;
+    border-radius: 4px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.45), 0 0 40px rgba(255,111,145,.15);
+    transform: rotateY(var(--ang)) translateZ(160px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    user-select: none;
+  }
+  .face-360 img{
+    width:100%;
+    height: calc(100% - 30px);
+    object-fit: cover;
+    display:block;
+    background:#ded2c8;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  .face-360 figcaption{
+    font-family:'Caveat', cursive;
+    font-size: 1.2rem;
+    color:#3a2a2a;
+    text-align:center;
+    margin-top: 8px;
+  }
+  .face-360.sem-foto img{ display:none; }
+  .face-360 .marcador-360{
+    display:none;
+    width:100%;
+    height: calc(100% - 30px);
+    align-items:center; justify-content:center;
+    flex-direction:column;
+    gap:6px;
+    background: repeating-linear-gradient(135deg, #e9ded2, #e9ded2 8px, #ded1c1 8px, #ded1c1 16px);
+    color:#8a7563;
+    font-family:'Poppins',sans-serif;
+    font-size:.7rem;
+    padding:8px;
+    text-align:center;
+  }
+  .face-360.sem-foto .marcador-360{ display:flex; }
+  .marcador-360 .icone{ font-size:1.5rem; }
+
+  .controles-360{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 18px;
+    margin-top: 22px;
+  }
+  .seta-360{
+    width: 38px; height:38px;
+    border-radius:50%;
+    border: 1px solid rgba(255,246,238,.35);
+    background: rgba(255,255,255,.06);
+    color: var(--creme);
+    font-size: 1.3rem;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition: background .2s ease, transform .15s ease;
+  }
+  .seta-360:hover{ background: rgba(255,111,145,.25); transform: scale(1.08); }
+  .pontos-360{ display:flex; gap:8px; }
+  .ponto-360{
+    width:8px; height:8px;
+    border-radius:50%;
+    background: rgba(255,246,238,.3);
+    cursor:pointer;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .ponto-360.ativo{
+    background: var(--rosa);
+    transform: scale(1.3);
+  }
+  .dica-360{
+    margin-top: 12px;
+    font-size:.78rem;
+    letter-spacing:1px;
+    color: rgba(255,214,224,.55);
+    font-style: italic;
+  }
+
   ::selection{ background: var(--rosa); color: var(--noite); }
 </style>
 </head>
@@ -702,6 +815,11 @@
     img.style.display = 'none';
     const polaroid = img.closest('.polaroid');
     if(polaroid) polaroid.classList.add('sem-foto');
+  }
+  function marcarSemFoto360(img, nomeArquivo){
+    img.style.display = 'none';
+    const face = img.closest('.face-360');
+    if(face) face.classList.add('sem-foto');
   }
 </script>
 
@@ -787,28 +905,46 @@
   </div>
 </section>
 
-<!-- ============ SECAO 4: FOTOS ============ -->
+<!-- ============ SECAO 4: FOTOS EM 360° ============ -->
 <section id="secao-fotos">
   <div class="eyebrow">a gente em fotos</div>
   <h2 class="script" style="font-style:italic; color:var(--rosa-clara); font-size:clamp(1.8rem,5vw,2.4rem); margin-bottom:8px;">Nossos momentos</h2>
-  <div class="galeria galeria-3">
-    <figure class="polaroid" style="--giro:-4deg; --atraso:.05s;">
-      <img src="foto1.jpeg" alt="Foto 1" onerror="marcarSemFoto(this,'foto1.jpeg')" style="object-position: 60% 40%;">
-      <div class="marcador"><span class="icone">📷</span><span class="nome-arquivo">foto1.jpeg</span></div>
-      <figcaption>tão perto de você</figcaption>
-    </figure>
-    <figure class="polaroid" style="--giro:3deg; --atraso:.15s;">
-      <img src="foto2.jpeg" alt="Foto 2" onerror="marcarSemFoto(this,'foto2.jpeg')">
-      <div class="marcador"><span class="icone">📷</span><span class="nome-arquivo">foto2.jpeg</span></div>
-      <figcaption>aquela noite</figcaption>
-    </figure>
-    <figure class="polaroid" style="--giro:-2deg; --atraso:.25s;">
-      <img src="foto3.jpeg" alt="Foto 3" onerror="marcarSemFoto(this,'foto3.jpeg')">
-      <div class="marcador"><span class="icone">📷</span><span class="nome-arquivo">foto3.jpeg</span></div>
-      <figcaption>seu sorriso de lado</figcaption>
-    </figure>
+
+  <div class="carrossel-360" id="carrossel360">
+    <div class="cena-360">
+      <div class="palco-360" id="palco360">
+        <figure class="face-360" data-nome="foto1.jpeg" style="--ang:0deg;">
+          <img src="foto1.jpeg" alt="Foto 1" onerror="marcarSemFoto360(this,'foto1.jpeg')" style="object-position: 60% 40%;">
+          <div class="marcador-360"><span class="icone">📷</span><span>foto1.jpeg</span></div>
+          <figcaption>tão perto de você</figcaption>
+        </figure>
+        <figure class="face-360" data-nome="foto2.jpeg" style="--ang:90deg;">
+          <img src="foto2.jpeg" alt="Foto 2" onerror="marcarSemFoto360(this,'foto2.jpeg')">
+          <div class="marcador-360"><span class="icone">📷</span><span>foto2.jpeg</span></div>
+          <figcaption>aquela noite</figcaption>
+        </figure>
+        <figure class="face-360" data-nome="foto3.jpeg" style="--ang:180deg;">
+          <img src="foto3.jpeg" alt="Foto 3" onerror="marcarSemFoto360(this,'foto3.jpeg')">
+          <div class="marcador-360"><span class="icone">📷</span><span>foto3.jpeg</span></div>
+          <figcaption>seu sorriso de lado</figcaption>
+        </figure>
+        <figure class="face-360" data-nome="foto4.jpeg" style="--ang:270deg;">
+          <img src="foto4.jpeg" alt="Foto 4" onerror="marcarSemFoto360(this,'foto4.jpeg')">
+          <div class="marcador-360"><span class="icone">📷</span><span>foto4.jpeg</span></div>
+          <figcaption>mais um momento nosso</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="controles-360">
+      <button class="seta-360" id="seta-esq" aria-label="Foto anterior">‹</button>
+      <div class="pontos-360" id="pontos360"></div>
+      <button class="seta-360" id="seta-dir" aria-label="Próxima foto">›</button>
+    </div>
+    <div class="dica-360">arraste pra girar ↔</div>
   </div>
 </section>
+
 
 <!-- ============ SECAO 5: SONHOS / FUTURO ============ -->
 <section id="secao-sonhos">
@@ -819,6 +955,7 @@
     <div class="sonho"><span class="icone-sonho">🌅</span><p>Ver o sol nascer com você em algum lugar novo</p></div>
     <div class="sonho"><span class="icone-sonho">🎶</span><p>Descobrir músicas juntos e ter as nossas próprias</p></div>
     <div class="sonho"><span class="icone-sonho">🍜</span><p>Experimentar comidas estranhas só pra rir do resultado</p></div>
+    <div class="sonho"><span class="icone-sonho">🏡</span><p>Construir uma rotina boa, dos nossos jeitos</p></div>
   </div>
 </section>
 
@@ -826,15 +963,15 @@
 <section id="secao-pergunta">
   <div class="pergunta-area" id="pergunta-area">
     <div class="eyebrow">última coisa</div>
-    <h2>?</h2>
+    <h2>Linhares, fica comigo?</h2>
     <div class="botoes" id="botoes">
       <button class="btn btn-sim" id="btn-sim">com certeza</button>
       <button class="btn btn-nao" id="btn-nao">deixa eu pensar</button>
     </div>
   </div>
   <div class="final-mensagem" id="final-mensagem">
-    <h2>disse sim foi?🤍</h2>
-    <p>Não podemos negar que o que está acontecendo entre a gente é forte, deixaremos os dias falarem por a gente...</p>
+    <h2>ela disse sim 🤍</h2>
+    <p>Obrigado por ter chegado até aqui. Do meu lado, é 101% — vamos ver, com calma, no que isso vira.</p>
   </div>
 </section>
 
@@ -1019,6 +1156,80 @@
       }, i*35);
     }
   }
+
+  // ---------- CARROSSEL 360° (arrastar / setas / pontos) ----------
+  const palco360 = document.getElementById('palco360');
+  const faces360 = Array.from(document.querySelectorAll('.face-360'));
+  const numFaces = faces360.length;
+  const passoAngulo = 360 / numFaces;
+  const pontosWrap = document.getElementById('pontos360');
+  const setaEsq = document.getElementById('seta-esq');
+  const setaDir = document.getElementById('seta-dir');
+
+  faces360.forEach((_, i)=>{
+    const p = document.createElement('div');
+    p.className = 'ponto-360' + (i === 0 ? ' ativo' : '');
+    p.addEventListener('click', ()=> irParaIndice(i));
+    pontosWrap.appendChild(p);
+  });
+  const pontos360 = Array.from(pontosWrap.querySelectorAll('.ponto-360'));
+
+  let anguloAtual = 0;
+  let indiceAtual = 0;
+  let arrastando = false;
+  let inicioX = 0;
+  let anguloInicio = 0;
+
+  function aplicarAngulo(angulo, comTransicao){
+    palco360.classList.toggle('arrastando', !comTransicao);
+    palco360.style.transform = `rotateY(${-angulo}deg)`;
+  }
+
+  function atualizarIndicadores(){
+    pontos360.forEach((p, i)=> p.classList.toggle('ativo', i === indiceAtual));
+  }
+
+  function irParaIndice(i){
+    indiceAtual = ((i % numFaces) + numFaces) % numFaces;
+    anguloAtual = indiceAtual * passoAngulo;
+    aplicarAngulo(anguloAtual, true);
+    atualizarIndicadores();
+  }
+
+  function iniciarArraste(x){
+    arrastando = true;
+    inicioX = x;
+    anguloInicio = anguloAtual;
+    palco360.classList.add('arrastando');
+  }
+  function moverArraste(x){
+    if(!arrastando) return;
+    const delta = (x - inicioX) * 0.5;
+    aplicarAngulo(anguloInicio - delta, false);
+  }
+  function finalizarArraste(x){
+    if(!arrastando) return;
+    arrastando = false;
+    const delta = (x - inicioX) * 0.5;
+    const anguloFinal = anguloInicio - delta;
+    indiceAtual = Math.round(anguloFinal / passoAngulo);
+    anguloAtual = indiceAtual * passoAngulo;
+    aplicarAngulo(anguloAtual, true);
+    atualizarIndicadores();
+  }
+
+  palco360.addEventListener('pointerdown', (ev)=>{
+    palco360.setPointerCapture(ev.pointerId);
+    iniciarArraste(ev.clientX);
+  });
+  palco360.addEventListener('pointermove', (ev)=> moverArraste(ev.clientX));
+  palco360.addEventListener('pointerup', (ev)=> finalizarArraste(ev.clientX));
+  palco360.addEventListener('pointercancel', (ev)=> finalizarArraste(ev.clientX));
+
+  setaEsq.addEventListener('click', ()=> irParaIndice(indiceAtual - 1));
+  setaDir.addEventListener('click', ()=> irParaIndice(indiceAtual + 1));
+
+  irParaIndice(0);
 
   // ---------- MUSICA (player oficial do Spotify) ----------
   const botaoMusica = document.getElementById('botao-musica');
